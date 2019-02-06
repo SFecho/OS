@@ -325,6 +325,7 @@ get_mode_finish:
 
 
 
+
  int $0x10
 
  cmp $0x4f, %ax

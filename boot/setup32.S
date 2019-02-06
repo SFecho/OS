@@ -317,6 +317,7 @@ get_mode_finish:
 #ifdef _PHYSICS_MACHINE_
 	movw $0x4118, %bx			
 #endif
+
 	int $0x10
 	
 	cmp $0x4f, %ax
