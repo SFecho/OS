@@ -14,7 +14,7 @@ OBJS =	boot/_boot.s boot/boot.o		\
 LD_OBJ = 	kernel/head.o kernel/main.o 	\
 			kernel/printk.o kernel/string.o	
 
-DISK = 100m.img		
+DISK = 80m.img		
 
 INCLUDE = include/		
 
