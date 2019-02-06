@@ -14,7 +14,7 @@ OBJS =	boot/_boot.s boot/boot.o		\
 LD_OBJ = 	kernel/head.o kernel/main.o 	\
 			kernel/printk.o kernel/string.o	
 
-DISK = 80m.img		
+DISK = 40m.img		
 
 INCLUDE = include/		
 
@@ -29,6 +29,7 @@ boot/boot.o: boot/_boot.s
 	$(ASM) --32 $< -o $@
 
 boot/boot.bin: boot/boot.o
+	mkfs.vfat -F 32 $(DISK)
 	ld -M --oformat binary -m elf_i386 -o $@ $< -T boot/boot.lds
 	dd if=boot/boot.bin of=$(DISK) bs=1 count=11 conv=notrunc
 	dd if=boot/boot.bin of=$(DISK) bs=1 seek=71 skip=71 count=375 conv=notrunc
