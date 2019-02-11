@@ -18,7 +18,7 @@ DISK = 40m.img
 
 INCLUDE = include/		
 
-CFLAG = -I $(INCLUDE) -mcmodel=large -fno-builtin  -nostdinc -fno-stack-protector -m64
+CFLAG = -I $(INCLUDE) -mcmodel=large -fno-builtin -fno-stack-protector -m64
 
 all: $(OBJS)
 
@@ -62,13 +62,13 @@ kernel/head.o: kernel/_head.s
 	$(ASM) --64 $< -o $@
 
 kernel/main.o: kernel/main.c
-	$(CC) $(CFLAG) -c $< -o $@
+	$(CC) $(CFLAG) -nostdinc  -c $< -o $@
 
 kernel/printk.o: kernel/printk.c
 	$(CC) $(CFLAG) -c $< -o $@
 
 kernel/string.o: kernel/string.c
-	$(CC) $(CFLAG) -c $< -o $@
+	$(CC) $(CFLAG) -nostdinc  -c $< -o $@
 
 kernel/kernel.bin: $(LD_OBJ)
 	ld  -M --oformat binary -m elf_x86_64 -o kernel/kernel.bin $(LD_OBJ) -T kernel/kernel.lds

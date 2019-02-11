@@ -3,13 +3,12 @@
 
 #include <types.h>
 #include <svga.h>
+#include <stdarg.h>
 
+typedef struct font_struct font_struct;
+typedef struct font_color font_color;
 
-
-typedef struct char_pos char_pos;
-typedef struct print_spec print_spec;
-
-struct char_pos
+struct font_struct
 {
     uint32 x_resolution;
     uint32 y_resolution;
@@ -17,25 +16,21 @@ struct char_pos
     uint32 y_cursor;
     uint32 x_char_size;
     uint32 y_char_size;
+    uint32 font_color;
+    uint32 bg_color;
     uint32 * video_frame_address;
     uint32   video_frame_length;
 };
 
- struct print_spec
- {
-    uint32 flags;
-    uint32 width;
-    uint32 precision;
-    uint32 radix;
-    int64  value;
- };
 
-char_pos char_pos_info;
+font_struct char_pos_info;
 
-void color_putchar(uint32 * video_addr, uint32 window_width, int cursor_x, int cursor_y, int char_color, char ascii_code);
+void color_putchar(uint32 * video_addr, int32 window_width, int32 cursor_x, int32 cursor_y, uint8 ascii_code);
 
-int printk(const char * format, ...);
+void set_color(unsigned int font_color,unsigned int bg_color);
 
-int putchar(char ascii_code);
+int printk(const char * fmt, ...);
+
+int vsprintf(char * buf, const char *fmt, va_list args);
 
 #endif

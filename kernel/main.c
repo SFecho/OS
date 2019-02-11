@@ -1,5 +1,4 @@
 #include <svga.h>
-#include <stdarg.h>
 #include <printk.h>
 
 void start_kernal(void)
@@ -17,7 +16,9 @@ void start_kernal(void)
 	char_pos_info.x_cursor = char_pos_info.y_cursor = 0;
 	char_pos_info.video_frame_address = (uint32 *)0xffff800000a00000;	//对应物理地址0xe0000000
 	char_pos_info.video_frame_length = char_pos_info.x_resolution * char_pos_info.y_resolution * 4;
-
+	
+	set_color(COLOR_WHITE, COLOR_BLACK);
+	 
 	for(i = 0; i < char_pos_info.x_resolution  * 20; i++)
 	{
 		tmp = (char *)addr;
@@ -42,13 +43,8 @@ void start_kernal(void)
 		addr++;
 	}
 
-	for(i = 0; i < 20; i++)
-	{
-		putchar('a');
-		putchar('b');
-		putchar('b');
-		putchar('\t');
-	}
+
+	printk("\nhello world%p\n", addr);
 
 	while(1);
 	
