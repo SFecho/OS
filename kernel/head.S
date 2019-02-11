@@ -10,7 +10,20 @@ _start:
 	movw %ax, %fs
 	movw %ax, %es
 	mov $0x9fff0, %esp
-	
+
+#################
+	xorq %rax, %rax
+	movl %ds:0x8228, %eax
+	addq $0x83, %rax
+	movq $8, %rcx
+	movq $0x103028, %rbx
+#填充页表	
+write_page:
+	movq %rax, %ds:(%rbx)
+	addq $0x200000, %rax
+	addq $8, %rbx
+loop write_page	
+#################	
 	
 	lidt idt_ptr(%rip)
 	lgdt gdt_ptr(%rip)
@@ -41,9 +54,54 @@ entry64:
 	mov %rax, %ds
 	mov %rax, %ss
 	mov %rax, %gs
-	mov %rax, %es
-	      
-	movq $0xffff800000007e00, %rsp
+	mov %rax, %es	      
+	movq $0xffff80000009fff0, %rsp
+setup_idt:
+	leaq ignore_int(%rip), %rdx
+	xorq %rax, %rax
+	movq $(0x08 << 16), %rax
+	movq $0x8e0000000000, %r8 
+	addq %r8, %rax
+	movw %dx, %ax
+	movq %rdx, %r8		#####
+	shrq $16, %r8
+	shlq $48, %r8
+	addq %r8, %rax
+	shrq $32, %rdx
+	leaq idt_tbl(%rip), %rdi
+	movq $256, %rcx
+
+write_idt_item:
+	movq %rax, %ds:(%rdi)
+	movq %rdx, %ds:8(%rdi)
+	addq $16, %rdi
+	loop write_idt_item
+
+setup_tss64:
+	leaq	tss64_tbl(%rip),	%rdx
+	xorq	%rax,	%rax
+	xorq	%rcx,	%rcx
+	movq	$0x89,	%rax
+	shlq	$40,	%rax
+	movl	%edx,	%ecx
+	shrl	$24,	%ecx
+	shlq	$56,	%rcx
+	addq	%rcx,	%rax
+	xorq	%rcx,	%rcx
+	movl	%edx,	%ecx
+	andl	$0xffffff,	%ecx
+	shlq	$16,	%rcx
+	addq	%rcx,	%rax
+	addq	$103,	%rax
+	leaq	gdt_tbl(%rip),	%rdi
+	movq	%rax,	64(%rdi)
+	shrq	$32,	%rdx
+	movq	%rdx,	72(%rdi)
+
+	mov	$0x40,	%ax
+	ltr	%ax	
+#===========================================
+
 	movq go_to_kernal(%rip), %rax
 	pushq $0x08
 	pushq %rax
@@ -52,7 +110,72 @@ entry64:
 go_to_kernal:
 	.quad start_kernal
 
-		
+# 哑中断代码
+ignore_int:
+	cld
+	pushq	%rax
+	pushq	%rbx
+	pushq	%rcx
+	pushq	%rdx
+	pushq	%rbp
+	pushq	%rdi
+	pushq	%rsi
+
+	pushq	%r8
+	pushq	%r9
+	pushq	%r10
+	pushq	%r11
+	pushq	%r12
+	pushq	%r13
+	pushq	%r14
+	pushq	%r15
+
+	movq	%es,	%rax
+	pushq	%rax
+	movq	%ds,	%rax
+	pushq	%rax
+
+	movq	$0x10,	%rax
+	movq	%rax,	%ds
+	movq	%rax,	%es
+
+	leaq	int_msg(%rip),	%rax			/* leaq get address */
+	
+	pushq	%rax
+	movq	%rax,	%rdi
+	movq	$0,	%rax
+	callq	printk
+	addq	$0x8,	%rsp
+
+	# 陷入死循环
+	jmp .	
+
+	popq	%rax
+	movq	%rax,	%ds
+	popq	%rax
+	movq	%rax,	%es
+
+	popq	%r15
+	popq	%r14
+	popq	%r13
+	popq	%r12
+	popq	%r11
+	popq	%r10
+	popq	%r9
+	popq	%r8
+
+	popq	%rsi
+	popq	%rdi
+	popq	%rbp
+	popq	%rdx
+	popq	%rcx
+	popq	%rbx
+	popq	%rax
+	iretq
+
+int_msg:
+	.asciz "unknown interrupt or fault at rip\n"
+
 .align 8
 .org 0x1000		
 _PML4E:
@@ -73,15 +196,8 @@ _PDE:
 	.quad 0x400083	# start linear addr = 0x400000 super mode
 	.quad 0x600083	# start linear addr = 0x600000 super mode
 	.quad 0x800083	# start linear addr = 0x800000 super mode
-	.quad 0xe0000083	# start linear addr = 0xe0000000 super mode
-	.quad 0xe0200083	# start linear addr = 0xe0200000 super mode
-	.quad 0xe0400083	# start linear addr = 0xe0400000 super mode
-	.quad 0xe0600083	# start linear addr = 0xe0600000 super mode
-	.quad 0xe0800083	# start linear addr = 0xe0800000 super mode
-	.quad 0xe0a00083	# start linear addr = 0xe0a00000 super mode
-	.quad 0xe0c00083	# start linear addr = 0xe0c00000 super mode
-	.quad 0xe0e00083	# start linear addr = 0xe0e00000 super mode
-	.fill 499, 8, 0	
+
+	.fill 507, 8, 0	
 
 .section .data
 ############################
