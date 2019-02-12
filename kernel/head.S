@@ -79,24 +79,24 @@ write_idt_item:
 
 setup_tss64:
 	leaq	tss64_tbl(%rip),	%rdx
-	xorq	%rax,	%rax
-	xorq	%rcx,	%rcx
-	movq	$0x89,	%rax
-	shlq	$40,	%rax
-	movl	%edx,	%ecx
-	shrl	$24,	%ecx
-	shlq	$56,	%rcx
-	addq	%rcx,	%rax
-	xorq	%rcx,	%rcx
-	movl	%edx,	%ecx
-	andl	$0xffffff,	%ecx
-	shlq	$16,	%rcx
-	addq	%rcx,	%rax
-	addq	$103,	%rax
-	leaq	gdt_tbl(%rip),	%rdi
-	movq	%rax,	64(%rdi)
-	shrq	$32,	%rdx
-	movq	%rdx,	72(%rdi)
+	xorq	%rax, %rax
+	xorq	%rcx, %rcx
+	movq	$0x89, %rax
+	shlq	$40, %rax
+	movl	%edx, %ecx
+	shrl	$24, %ecx
+	shlq	$56, %rcx
+	addq	%rcx, %rax
+	xorq	%rcx, %rcx
+	movl	%edx, %ecx
+	andl	$0xffffff, %ecx
+	shlq	$16, %rcx
+	addq	%rcx, %rax
+	addq	$103, %rax
+	leaq	gdt_tbl(%rip), %rdi
+	movq	%rax, 64(%rdi)
+	shrq	$32, %rdx
+	movq	%rdx, 72(%rdi)
 
 	mov	$0x40,	%ax
 	ltr	%ax	

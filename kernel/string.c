@@ -2,82 +2,49 @@
 
 int strlen(const char * str)
 {
-    register int __res __asm__("cx");
-    __asm__ __volatile__ ("cld;  \
-            repne;              \
-            scasb;              \
-            notl %0;            \
-            decl %0"
-            :"=c"(__res) /*output list*/
-            :"D"(str),"a"(0), "0"(0xffffffff)/*Input list*/
-            :
-    );
-    return __res;
+    register int len = 0;
+    while(*str++)
+        len++;
+    return len;
 }
 
 int strcmp(const char * str1, const char * str2)
 {
-    register int __res __asm__("ax");
-    __asm__ __volatile__ ("cld; \
-            1: lodsb;           \
-            scasb;              \
-            jne 2f;             \
-            testb %%al, %%al;   \
-            jne 1b;             \
-            xorl %%eax, %%eax;  \
-            jmp 3f;             \
-            2: movl $1, %%eax;  \
-            jl 3f;              \
-            negl %%eax;         \
-            3:"
-            :"=a"(__res)
-            :"S"(str1), "D"(str2)
-            :
-    );
-    return __res;
+    for( ;*str1 == *str2; str1++, str2++)
+        if(*str1 == '\0')
+            return 0;
+    return *str1 > *str2 ? 1 : -1;
 }
 
 void memcpy(void * dest, void * src, int data_size)
 {
-    __asm__ __volatile__ ("cld; \
-            rep;                \
-            movsb;"
-            : /*Output list*/
-            :"S"(src), "D"(dest),  "c"(data_size) /*Input list*/
-            :"ax"
-    );
+    while(data_size--)
+    {
+        *(char *)dest = *(char *)src;
+        (char *)dest++;
+        (char *)src++;
+    }
 }
 
 char * strcpy(char * dest, const char * src)
 {
-    __asm__ __volatile__ ("cld; \
-            1: lodsb;           \
-            stosb;              \
-            testb %%al, %%al;   \
-            jnz 1b"
-            :
-            :"S"(src), "D"(dest)
-            :"ax"
-    );
-
+    register char * tmp = dest;
+    while(*src)
+    {
+        *tmp = *src;
+        src++;
+        tmp++;
+    }
+    *tmp = '\0';
     return dest;
 }
 
 char * strcat(char * dest, const char * src)
 {
-    __asm__ __volatile__ ("cld;         \
-                    repnz;              \
-                    scasb;              \
-                    decq %1;            \
-                    1: lodsb;           \
-                    stosb;              \
-                    testb %%al, %%al;   \
-                    jnz 1b"
-    :
-    :"S"(src), "D"(dest), "a"(0), "c"(0xffffffff)
-    :
-    );
-
+    register char * tmp = dest;
+     while(*tmp)
+        tmp++;
+    strcpy(tmp, src);
 	return dest;
 }
 
