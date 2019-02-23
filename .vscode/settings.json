@@ -10,6 +10,10 @@
         "linkage.h": "c",
         "types.h": "c",
         "stddef.h": "c",
-        "font.h": "c"
+        "font.h": "c",
+        "kernal.h": "c",
+        "kernel.h": "c",
+        "div.h": "c",
+        "x64.h": "c"
     }
 }

@@ -1,8 +1,6 @@
-
 .global _start
 
 .section .text
-
 _start:
 	movw $0x10, %ax
 	movw %ax, %ds
@@ -77,6 +75,7 @@ write_idt_item:
 	addq $16, %rdi
 	loop write_idt_item
 
+
 setup_tss64:
 	leaq	tss64_tbl(%rip),	%rdx
 	xorq	%rax, %rax
@@ -138,13 +137,15 @@ ignore_int:
 	movq	$0x10,	%rax
 	movq	%rax,	%ds
 	movq	%rax,	%es
+				
+	# 参数自左向右为rdi rsi rdx rcx r8 r9，其他的通过栈
 
-	leaq	int_msg(%rip),	%rax			/* leaq get address */
-	
+	leaq	int_msg(%rip),	%rax
 	pushq	%rax
 	movq	%rax,	%rdi
 	movq	$0,	%rax
 	callq	printk
+
 	addq	$0x8,	%rsp
 
 	# 陷入死循环
@@ -174,7 +175,7 @@ ignore_int:
 	iretq
 
 int_msg:
-	.asciz "unknown interrupt or fault at rip\n"
+	.asciz "unknown interrupt or exception at rip\n"
 
 .align 8
 .org 0x1000		

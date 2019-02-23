@@ -1,5 +1,4 @@
 #include <asm/boot.h>
-#include <asm/x86.h>
 
 .code32
 .section .text

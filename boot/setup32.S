@@ -1,5 +1,5 @@
 #include <asm/boot.h>
-#include <asm/x86.h>
+
 
 #define _BOCHS_VIRTUAL_MACHINE_
 

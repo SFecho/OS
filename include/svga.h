@@ -3,8 +3,6 @@
 
 #include <types.h>
 
-typedef struct vbe_mode_info vbe_mode_info;
-
 #define COLOR_RED		0x00ff0000
 #define COLOR_GREEN		0x0000ff00
 #define COLOR_BLUE		0x000000ff
@@ -14,6 +12,10 @@ typedef struct vbe_mode_info vbe_mode_info;
 #define COLOR_BLACK 	0x00000000		//黑
 #define COLOR_INDIGO	0x0000ffff		//靛
 #define COLOR_PURPLE	0x008000ff		//紫
+
+typedef struct vbe_mode_info vbe_mode_info;
+typedef struct font_struct font_struct;
+typedef struct font_color font_color;
 
 struct vbe_mode_info
 {
@@ -57,6 +59,22 @@ struct vbe_mode_info
 	uint16 page_reserve_b;
 	
 } __attribute__ ((packed));	
+
+struct font_struct
+{
+    uint32 x_resolution;
+    uint32 y_resolution;
+    uint32 x_cursor;
+    uint32 y_cursor;
+    uint32 x_char_size;
+    uint32 y_char_size;
+    uint32 font_color;
+    uint32 bg_color;
+    uint32 * video_frame_address;
+    uint32   video_frame_length;
+};
+
+font_struct char_pos_info;
 
 /*vbe_mode_info指针*/
 vbe_mode_info * vbe_info_ptr;

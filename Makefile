@@ -9,10 +9,15 @@ OBJS =	boot/_boot.s boot/boot.o		\
 		boot/setup64.bin kernel/main.o	\
 		kernel/_head.s	kernel/head.o 	\
 		kernel/printk.o kernel/string.o	\
-		kernel/kernel.bin 
+		kernel/gate.o kernel/_entry.s	\
+		kernel/entry.o kernel/trap.o	\
+		kernel/kernel.bin
+	
 
-LD_OBJ = 	kernel/head.o kernel/main.o 	\
-			kernel/printk.o kernel/string.o	
+LD_OBJS = 	kernel/head.o kernel/main.o 	\
+			kernel/printk.o kernel/string.o	\
+			kernel/gate.o kernel/entry.o	\
+			kernel/trap.o	
 
 DISK = 40m.img		
 
@@ -62,7 +67,7 @@ kernel/head.o: kernel/_head.s
 	$(ASM) --64 $< -o $@
 
 kernel/main.o: kernel/main.c
-	$(CC) $(CFLAG) -nostdinc  -c $< -o $@
+	$(CC) $(CFLAG) -nostdinc -c $< -o $@
 
 kernel/printk.o: kernel/printk.c
 	$(CC) $(CFLAG) -c $< -o $@
@@ -70,9 +75,20 @@ kernel/printk.o: kernel/printk.c
 kernel/string.o: kernel/string.c
 	$(CC) $(CFLAG) -nostdinc  -c $< -o $@
 
-kernel/kernel.bin: $(LD_OBJ)
-	ld  -M --oformat binary -m elf_x86_64 -o kernel/kernel.bin $(LD_OBJ) -T kernel/kernel.lds
+kernel/gate.o: kernel/gate.c
+	$(CC) $(CFLAG) -nostdinc -c $< -o $@
 
+kernel/_entry.s: kernel/entry.S
+	$(CC) -E -I $(INCLUDE) $< > $@
+
+kernel/entry.o: kernel/_entry.s
+	$(ASM) --64 $< -o $@
+
+kernel/trap.o: kernel/trap.c
+	$(CC) $(CFLAG) -nostdinc -c $< -o $@
+
+kernel/kernel.bin: $(LD_OBJS)
+	ld  -M --oformat binary -m elf_x86_64 -o kernel/kernel.bin $(LD_OBJS) -T kernel/kernel.lds
 
 clean:
 	rm -f boot/*.o kernel/*.o

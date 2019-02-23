@@ -1,10 +1,9 @@
-#include <printk.h>
-#include <stddef.h>
 #include <asm/linkage.h>
+#include <os/kernel.h>
+#include <stddef.h>
 #include <asm/div.h>
-#include <types.h>
 #include <string.h>
-#include <font.h>
+#include <os/font.h>
 
 char buff[4096];
 
@@ -20,7 +19,7 @@ char buff[4096];
 #define SPACE       32          /*空格填充*/
 
 
-void color_putchar(uint32 * video_addr, int32 window_width, int32 cursor_x, int32 cursor_y, uint8 ascii_code)
+static void putchar(uint32 * video_addr, int32 window_width, int32 cursor_x, int32 cursor_y, uint8 ascii_code)
 {
     int32 i, j;
     char * char_bitmap = font_ascii[ascii_code];
@@ -136,6 +135,79 @@ static char * itoa(char * str, int64 value, int32 radix, int32 size, int32 preci
         *str++ = ' ';       
 
     return str;
+}
+
+static inline void console_writeline(char * buff, int size)
+{
+	int count = 0;
+	int line = 0;
+	for(count = 0;count < size || line;count++)
+	{
+		if(line > 0)
+		{
+			count--;
+			goto Label_tab;
+		}
+		if((unsigned char)*(buff + count) == '\n')
+		{
+			char_pos_info.y_cursor++;
+            char_pos_info.x_cursor = 0;
+		}
+		else if((unsigned char)*(buff + count) == '\b')
+		{
+            char_pos_info.x_cursor--;
+			if(char_pos_info.x_cursor < 0)
+			{
+                char_pos_info.x_cursor = (char_pos_info.x_resolution / char_pos_info.x_char_size - 1) * char_pos_info.x_char_size;
+				char_pos_info.y_cursor--;
+				if(char_pos_info.y_cursor < 0)
+					char_pos_info.y_cursor = (char_pos_info.y_resolution / char_pos_info.y_char_size - 1) *  char_pos_info.y_char_size;
+			}	
+			putchar(
+                char_pos_info.video_frame_address , 
+                char_pos_info.x_resolution , 
+                char_pos_info.x_cursor * char_pos_info.x_char_size , 
+                char_pos_info.y_cursor * char_pos_info.y_char_size , 
+                ' ');	
+		}
+		else if((unsigned char)*(buff + count) == '\t')
+		{
+			line = ((char_pos_info.x_cursor + 8) & ~(8 - 1)) - char_pos_info.x_cursor;
+
+Label_tab:
+			line--;
+            putchar(
+                char_pos_info.video_frame_address , 
+                char_pos_info.x_resolution , 
+                char_pos_info.x_cursor * char_pos_info.x_char_size , 
+                char_pos_info.y_cursor * char_pos_info.y_char_size , 
+                ' ');
+		//	putchar(Pos.FB_addr , Pos.XResolution , Pos.XPosition * Pos.XCharSize , Pos.YPosition * Pos.YCharSize , FRcolor , BKcolor , ' ');	
+			char_pos_info.x_cursor++;
+		}
+		else
+		{
+            putchar(
+                char_pos_info.video_frame_address , 
+                char_pos_info.x_resolution , 
+                char_pos_info.x_cursor * char_pos_info.x_char_size , 
+                char_pos_info.y_cursor * char_pos_info.y_char_size , 
+                (unsigned char)*(buff + count));
+			char_pos_info.x_cursor++;
+		}
+
+
+		if(char_pos_info.x_cursor >= (char_pos_info.x_resolution / char_pos_info.x_char_size))
+		{
+            char_pos_info.y_cursor++;
+			char_pos_info.x_cursor = 0;
+		}
+		if(char_pos_info.y_cursor >= (char_pos_info.y_resolution / char_pos_info.y_char_size))
+		{
+            char_pos_info.y_cursor = 0;
+		}
+        
+	}
 }
 
 int vsprintf(char * buf, const char *fmt, va_list args)
@@ -260,7 +332,7 @@ int vsprintf(char * buf, const char *fmt, va_list args)
 						field_width = 2 * sizeof(void *);
 						flags |= ZERO_PAD;
 					}
-                    flags |= SPECIAL;
+                    flags |= (SPECIAL|SMALL);
 					str = itoa(str, (int64)va_arg(args,void *),16,field_width,precision,flags);
 					break;
 
@@ -331,81 +403,10 @@ void set_color(unsigned int font_color,unsigned int bg_color)
 int printk(const char * fmt,...)
 {
 	int i = 0;
-	int count = 0;
-	int line = 0;
 	va_list args;
 	va_start(args, fmt);
-
 	i = vsprintf(buff,fmt, args);
-
 	va_end(args);
-
-	for(count = 0;count < i || line;count++)
-	{
-		if(line > 0)
-		{
-			count--;
-			goto Label_tab;
-		}
-		if((unsigned char)*(buff + count) == '\n')
-		{
-			char_pos_info.y_cursor++;
-            char_pos_info.x_cursor = 0;
-		}
-		else if((unsigned char)*(buff + count) == '\b')
-		{
-            char_pos_info.x_cursor--;
-			if(char_pos_info.x_cursor < 0)
-			{
-                char_pos_info.x_cursor = (char_pos_info.x_resolution / char_pos_info.x_char_size - 1) * char_pos_info.x_char_size;
-				char_pos_info.y_cursor--;
-				if(char_pos_info.y_cursor < 0)
-					char_pos_info.y_cursor = (char_pos_info.y_resolution / char_pos_info.y_char_size - 1) *  char_pos_info.y_char_size;
-			}	
-			color_putchar(
-                char_pos_info.video_frame_address , 
-                char_pos_info.x_resolution , 
-                char_pos_info.x_cursor * char_pos_info.x_char_size , 
-                char_pos_info.y_cursor * char_pos_info.y_char_size , 
-                ' ');	
-		}
-		else if((unsigned char)*(buff + count) == '\t')
-		{
-			line = ((char_pos_info.x_cursor + 8) & ~(8 - 1)) - char_pos_info.x_cursor;
-
-Label_tab:
-			line--;
-            color_putchar(
-                char_pos_info.video_frame_address , 
-                char_pos_info.x_resolution , 
-                char_pos_info.x_cursor * char_pos_info.x_char_size , 
-                char_pos_info.y_cursor * char_pos_info.y_char_size , 
-                ' ');
-		//	putchar(Pos.FB_addr , Pos.XResolution , Pos.XPosition * Pos.XCharSize , Pos.YPosition * Pos.YCharSize , FRcolor , BKcolor , ' ');	
-			char_pos_info.x_cursor++;
-		}
-		else
-		{
-            color_putchar(
-                char_pos_info.video_frame_address , 
-                char_pos_info.x_resolution , 
-                char_pos_info.x_cursor * char_pos_info.x_char_size , 
-                char_pos_info.y_cursor * char_pos_info.y_char_size , 
-                (unsigned char)*(buff + count));
-			char_pos_info.x_cursor++;
-		}
-
-
-		if(char_pos_info.x_cursor >= (char_pos_info.x_resolution / char_pos_info.x_char_size))
-		{
-            char_pos_info.y_cursor++;
-			char_pos_info.x_cursor = 0;
-		}
-		if(char_pos_info.y_cursor >= (char_pos_info.y_resolution / char_pos_info.y_char_size))
-		{
-            char_pos_info.y_cursor = 0;
-		}
-        
-	}
+	console_writeline(buff, i);
 	return i;
 }
