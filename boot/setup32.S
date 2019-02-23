@@ -178,52 +178,31 @@ read_kernel:
 	call read_disk
 	add $14, %sp
 	
-	add %ecx, kernel_sector_size
-	
-	movw %es, %ax
-	movb clus_per_sector, %bl
-	movzx %bl, %bx
-	
-	shl $5, %bx
-	
-	addw %bx, %ax
-	movw %ax, %es
-	
-	pushw %ds
+	shl $7, %ecx
+	movl kernel_pos, %edi
+	movl %esi, %ebx
+	xorw %si, %si
+
+move_kernel:
+	movl %es:(%si), %eax
+	movl %eax, %fs:(%edi)
+	add $4, %si
+	add $4, %edi
+	loop move_kernel
+
+	movl %edi, kernel_pos
+	movl %ebx, %esi
+
+	mov %ds, %bx
 	shl $2, %esi
 	movw $BOOT_SEG, %ax
 	movw %ax, %ds
 	movl %ds:(%si), %eax
-	popw %ds
+	mov %bx, %ds
 	
 	jmp read_kernel
 	
 read_ok:
-	xorl %ecx, %ecx
-	movl (kernel_sector_size), %ecx
-	shl $7, %ecx				
-	mov $KERNEL_ADDR, %edi
-	xor %esi, %esi
-	mov $TMP_KERNEL_SEG, %ax
-	mov %ax, %es
-move_kernel:
-	movl %es:(%si), %eax
-	movl %eax, %fs:(%edi)
-	add $4, %esi
-	add $4, %edi
-	
-	cmpl $0x10000, %esi
-	je reset_es
-	jmp continue_move
-reset_es:
-	movw %es, %si
-	addw $0x1000, %si
-	movw %si, %es
-	xorl %esi, %esi
-	
-continue_move:		
-	loop move_kernel
-
 	movw %cs, %ax
 	movw %ax, %es
     movw $has_kernel_str, %bp
@@ -395,11 +374,13 @@ read_disk:
 		.long 0
 	clus_per_sector:
 		.byte 0
-		
+	kernel_pos:
+		.long 0x100000
 	lod_str:
 		.ascii	"setup......!!"
 		
 	.equ LOD_STR_LEN, .- lod_str
+
 	
 	disk_addr_pkg:
 		.byte 	0x10	

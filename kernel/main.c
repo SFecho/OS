@@ -44,9 +44,20 @@ void start_kernal(void)
 		addr++;
 	}
 
-	set_sys_vector();
-
 	printk("\nhello world%p\n", addr);
+	load_TR(8);
+	set_tss64(
+		0xffff800000007c00,
+		0xffff800000007c00,
+		0xffff800000007c00,
+		0xffff800000007c00,
+		0xffff800000007c00,
+		0xffff800000007c00,
+		0xffff800000007c00,
+		0xffff800000007c00,
+		0xffff800000007c00,
+		0xffff800000007c00);
+	set_sys_vector();
 
 	i = 1 / 0;
 
