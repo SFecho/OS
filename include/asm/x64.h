@@ -69,4 +69,5 @@ void set_tss64(uint64 rsp0, uint64 rsp1, uint64 rsp2, uint64 ist1, uint64 ist2, 
                uint64 ist4, uint64 ist5, uint64 ist6, uint64 ist7);
 
 void set_sys_vector();
+
 #endif

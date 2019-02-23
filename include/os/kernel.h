@@ -5,10 +5,10 @@
 #include <svga.h>
 #include <stdarg.h>
 
-void set_color(unsigned int font_color,unsigned int bg_color);
+void set_color(unsigned int font_color, unsigned int bg_color);
 
-int printk(const char * fmt, ...);
+int printk(const char *fmt, ...);
 
-int vsprintf(char * buf, const char *fmt, va_list args);
+int vsprintf(char *buf, const char *fmt, va_list args);
 
 #endif

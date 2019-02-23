@@ -2,7 +2,7 @@
 #include <os/kernel.h>
 #include <asm/x64.h>
 
-void start_kernal(void)
+void start_kernel(void)
 {
 	uint32 i;
 	uint32 *addr = (uint32 *)0xffff800000a00000;
@@ -20,31 +20,7 @@ void start_kernal(void)
 
 	set_color(COLOR_WHITE, COLOR_BLACK);
 
-	for (i = 0; i < char_pos_info.x_resolution * 20; i++)
-	{
-		tmp = (char *)addr;
-
-		tmp[0] = 0xff;
-		tmp[1] = 0x0;
-		tmp[2] = 0x0;
-		tmp[3] = 0x0;
-
-		addr++;
-	}
-
-	for (i = 0; i < char_pos_info.x_resolution * 20; i++)
-	{
-		tmp = (char *)addr;
-
-		tmp[0] = 0x0;
-		tmp[1] = 0xff;
-		tmp[2] = 0x0;
-		tmp[3] = 0x0;
-
-		addr++;
-	}
-
-	printk("\nhello world%p\n", addr);
+	printk("hello world%#018lx\n", 1);
 	load_TR(8);
 	set_tss64(
 		0xffff800000007c00,
@@ -57,6 +33,7 @@ void start_kernal(void)
 		0xffff800000007c00,
 		0xffff800000007c00,
 		0xffff800000007c00);
+
 	set_sys_vector();
 
 	i = 1 / 0;

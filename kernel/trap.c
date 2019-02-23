@@ -7,7 +7,7 @@ void do_div_error(uint64 rsp, uint64 error_code)
 {
     uint64 *p = (uint64 *)(rsp + 0x98);
     set_color(COLOR_RED, COLOR_BLACK);
-    printk("div 0 error, error code:%#0181x, rsp: %#0181x, rip: %#0181x\n", error_code, rsp, *p);
+    printk("div(0) error, error_code:%#018lx, rsp:%#018lx, rip: %#018lx\n", error_code, rsp, *p);
     set_color(COLOR_WHITE, COLOR_BLACK);
     while (1)
         ;

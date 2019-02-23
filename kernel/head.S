@@ -75,7 +75,6 @@ write_idt_item:
 	addq $16, %rdi
 	loop write_idt_item
 
-
 setup_tss64:
 	leaq	tss64_tbl(%rip),	%rdx
 	xorq	%rax, %rax
@@ -97,17 +96,15 @@ setup_tss64:
 	shrq	$32, %rdx
 	movq	%rdx, 72(%rdi)
 
-	mov	$0x40,	%ax
-	ltr	%ax	
 #===========================================
 
-	movq go_to_kernal(%rip), %rax
+	movq go_to_kernel(%rip), %rax
 	pushq $0x08
 	pushq %rax
 	lretq
 	
-go_to_kernal:
-	.quad start_kernal
+go_to_kernel:
+	.quad start_kernel
 
 # 哑中断代码
 ignore_int:
@@ -178,7 +175,8 @@ int_msg:
 	.asciz "unknown interrupt or exception at rip\n"
 
 .align 8
-.org 0x1000		
+.org 0x1000	
+.global	_PML4E
 _PML4E:
 	.quad 0x102007
 	.fill 255, 8, 0
@@ -186,11 +184,13 @@ _PML4E:
 	.fill 255, 8, 0
 
 .org 0x2000	
+.global _PDPTE
 _PDPTE:	
 	.quad 0x103003	
 	.fill 511, 8, 0		
 	
 .org 0x3000	
+.global _PDE
 _PDE:
 	.quad 0x000083	# start linear addr = 0x000000 super mode
 	.quad 0x200083	# start linear addr = 0x200000 super mode
@@ -210,8 +210,8 @@ _PDE:
 ############################
 gdt_tbl:
 	.quad 0x0000000000000000
-	.quad 0x0020980000000000	# kernal code
-	.quad 0x0000920000000000	# kernal data
+	.quad 0x0020980000000000	# kernel code
+	.quad 0x0000920000000000	# kernel data
 	.quad 0x0020f80000000000	# user code
 	.quad 0x0000f20000000000	# user data
 	.quad 0x00cf9a000000ffff	# 32bit code
