@@ -14,12 +14,12 @@ _start:
 	mov %ax, %es
 	mov $0xfff0, %sp #SS:SP = 0x9000:ff00
 	
-    movw $lod_str, %bp
-    movw $LOD_STR_LEN, %cx
-    movw $0x1301, %ax
-    movw $0x000c, %bx
-    movw $0x0100, %dx
-    int  $0x10
+	movw $lod_str, %bp
+	movw $LOD_STR_LEN, %cx
+	movw $0x1301, %ax
+	movw $0x000c, %bx
+	movw $0x0100, %dx
+	int  $0x10
 
 	
 	xor %ebx, %ebx

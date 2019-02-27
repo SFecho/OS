@@ -74,7 +74,8 @@ struct font_struct
 	uint32 video_frame_length;
 };
 
-font_struct char_pos_info;
+/*光标字符信息模块*/
+extern font_struct char_pos_info;
 
 /*vbe_mode_info指针*/
 extern vbe_mode_info *vbe_info_ptr;
