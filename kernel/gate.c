@@ -1,4 +1,4 @@
-#include <asm/x64.h>
+#include <arch/x64.h>
 
 void set_int_gate(uint32 number, uint8 ist, void *code)
 {

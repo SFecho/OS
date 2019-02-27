@@ -1,7 +1,7 @@
 #include <asm/linkage.h>
 #include <os/kernel.h>
 #include <stddef.h>
-#include <asm/div.h>
+#include <arch/div64.h>
 #include <string.h>
 #include <os/font.h>
 
@@ -395,7 +395,7 @@ int vsprintf(char *buf, const char *fmt, va_list args)
 	return str - buf;
 }
 
-void set_color(unsigned int font_color, unsigned int bg_color)
+inline void set_color(unsigned int font_color, unsigned int bg_color)
 {
 	char_pos_info.bg_color = bg_color;
 	char_pos_info.font_color = font_color;

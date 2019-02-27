@@ -1,6 +1,16 @@
 #include <svga.h>
 #include <os/kernel.h>
-#include <asm/x64.h>
+#include <arch/x64.h>
+#include <os/memory.h>
+
+/*e820内存描述符*/
+memory_desc memory_manage_struct;
+
+/*vbe信息指针*/
+vbe_mode_info *vbe_info_ptr;
+
+/*字符信息模块，用于printk*/
+font_struct char_pos_info;
 
 void start_kernel(void)
 {
@@ -36,7 +46,7 @@ void start_kernel(void)
 
 	set_sys_vector();
 
-	i = 1 / 0;
+	init_memory();
 
 	while (1)
 		;

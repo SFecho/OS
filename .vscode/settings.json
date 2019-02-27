@@ -14,6 +14,7 @@
         "kernal.h": "c",
         "kernel.h": "c",
         "div.h": "c",
-        "x64.h": "c"
+        "x64.h": "c",
+        "memory.h": "c"
     }
 }

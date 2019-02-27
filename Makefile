@@ -8,22 +8,24 @@ OBJS =	boot/_boot.s boot/boot.o		\
 		boot/_setup64.s boot/setup64.o 	\
 		boot/setup64.bin kernel/main.o	\
 		kernel/_head.s	kernel/head.o 	\
-		kernel/printk.o kernel/string.o	\
-		kernel/gate.o kernel/_entry.s	\
-		kernel/entry.o kernel/trap.o	\
-		kernel/kernel.bin
+		kernel/printk.o kernel/gate.o	\
+		kernel/_entry.s kernel/entry.o	\
+		kernel/trap.o lib/rb_tree.o		\
+		lib/string.o mm/memory.o		\
+		kernel.bin
 	
 
 LD_OBJS = 	kernel/head.o kernel/main.o 	\
-			kernel/printk.o kernel/string.o	\
-			kernel/gate.o kernel/entry.o	\
-			kernel/trap.o	
+			kernel/printk.o kernel/entry.o	\
+			kernel/gate.o kernel/trap.o		\
+			mm/memory.o lib/string.o		\
+			lib/rb_tree.o
 
 DISK = 40m.img		
 
 INCLUDE = include/		
 
-CFLAG = -I $(INCLUDE) -mcmodel=large -fno-builtin -fno-stack-protector -m64
+CFLAGS = -I $(INCLUDE) -mcmodel=large -fno-builtin -nostdinc -fno-stack-protector -m64
 
 all: $(OBJS)
 
@@ -67,16 +69,13 @@ kernel/head.o: kernel/_head.s
 	$(ASM) --64 $< -o $@
 
 kernel/main.o: kernel/main.c
-	$(CC) $(CFLAG) -nostdinc -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 kernel/printk.o: kernel/printk.c
-	$(CC) $(CFLAG) -c $< -o $@
-
-kernel/string.o: kernel/string.c
-	$(CC) $(CFLAG) -nostdinc  -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 kernel/gate.o: kernel/gate.c
-	$(CC) $(CFLAG) -nostdinc -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 kernel/_entry.s: kernel/entry.S
 	$(CC) -E -I $(INCLUDE) $< > $@
@@ -85,12 +84,21 @@ kernel/entry.o: kernel/_entry.s
 	$(ASM) --64 $< -o $@
 
 kernel/trap.o: kernel/trap.c
-	$(CC) $(CFLAG) -nostdinc -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
-kernel/kernel.bin: $(LD_OBJS)
-	ld  -M --oformat binary -m elf_x86_64 -o kernel/kernel.bin $(LD_OBJS) -T kernel/kernel.lds
+lib/string.o: lib/string.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+lib/rb_tree.o: lib/rb_tree.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+mm/memory.o: mm/memory.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+kernel.bin: $(LD_OBJS)
+	ld  -M --oformat binary -m elf_x86_64 -o kernel.bin $(LD_OBJS) -T kernel/kernel.lds
 
 clean:
-	rm -f boot/*.o kernel/*.o
-	rm -f boot/*.bin kernel/*.bin kernel/*.BIN
+	rm -f boot/*.o kernel/*.o mm/*.o lib/*.o
+	rm -f *.bin boot/*.bin
 	rm -f boot/_*.s kernel/_*.s
