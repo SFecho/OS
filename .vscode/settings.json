@@ -16,5 +16,6 @@
         "div.h": "c",
         "x64.h": "c",
         "memory.h": "c"
-    }
+    },
+    "C_Cpp.intelliSenseEngineFallback": "Enabled"
 }
